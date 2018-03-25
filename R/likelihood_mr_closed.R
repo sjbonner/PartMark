@@ -36,7 +36,7 @@ lhd_mt <- function(model,data,pars,upper_limit,log=TRUE){
 #' @export
 #'
 #' @examples
-lhd_m0_wrap <- function(parsvec,model,data,upper_limit,log=TRUE){
+lhd_mr_wrap <- function(parsvec,model,data,upper_limit,log=TRUE){
  
   ## Map parameter vector to parameter list
   if(model$mixture=="Poisson"){

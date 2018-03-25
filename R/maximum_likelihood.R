@@ -6,15 +6,27 @@
 #' @param method Optimization method.
 #' @param trace Trace level for optim (defaults to none).
 #' @param maxit Maximum iterations in optim (defaults to optim default).
+#' @param Xlambda Matrix of covariates of abundance model
+#' @param Xp Matri of covariats of detection model
+#' @param submodel One of "pm" (Partial Marking), "mr" (Mark Recapture), "um" (Unmarked)
 #'
 #' @return
 #' @export
 #'
 #' @examples
-ml_fit <- function(model, data, upper_limit,submodel="pm",method="BFGS",trace=NULL,maxit=NULL) {
+ml_fit <- function(model, data, Xlambda, Xp, upper_limit,submodel="pm",method="BFGS",trace=NULL,maxit=NULL) {
+
   ## Identify likelihood wrapper
-  lhd_wrap <- switch(submodel,pm=lhd_pm_wrap,mt=lhd_mt_wrap,m0=lhd_m0_wrap,um=lhd_um_wrap,stop("Unknown submodel",submodel,".\n\n"))
+  lhd_wrap <- switch(submodel,pm=lhd_pm_wrap,
+                     mt=lhd_mt_wrap,
+                     mr=lhd_mr_wrap,
+                     um=lhd_um_wrap,
+                     stop("Unknown submodel",submodel,".\n\n"))
   
+  ## Build design matrices
+  model$Xlambda <- model.matrix(model$p$formula,Xlambda)
+  model$Xp <- model.matrix(model$p$formula,Xp)
+    
   ## Set initial values
   if (model$mixture == "Poisson") {
     ## Lambda
@@ -23,7 +35,7 @@ ml_fit <- function(model, data, upper_limit,submodel="pm",method="BFGS",trace=NU
       max(sapply(data, function(list)
         max(list$u + list$Mstar))) # Max of min number of individuals known to be alive at each site
     }
-    else if(submodel=="mt" || submodel=="m0")
+    else if(submodel=="mr" || submodel=="mr")
       minN <- sapply(data,function(X) X$n)
     
     lambda <- mean(minN / (1 - (1 - .4) ^ model$T[1]))
