@@ -22,9 +22,9 @@ lhd_pm <- function(model,data,pars,upper_limit,log=TRUE){
 
 #' Likelihood for N-Mix/MR Model (alternative)
 #'
+#' @param beta Vector of parameter values
 #' @param model List of model components
 #' @param data List of data components
-#' @param parsvec Vector of parameter values
 #' @param upper_limit Vector of upper limits on summation over abundance for each site
 #'
 #' @details This form of the likelihood accepts parameters as a vector instead of in list form. 
@@ -36,16 +36,21 @@ lhd_pm <- function(model,data,pars,upper_limit,log=TRUE){
 #' @export
 #'
 #' @examples
-lhd_pm_wrap <- function(parsvec,model,data,upper_limit,log=TRUE){
+lhd_pm_wrap <- function(beta,model,data,upper_limit,log=TRUE){
   
   ## Map parameter vector to parameter list
   if(model$mixture=="Poisson"){
-    ## First parameter is log(\lambda)
-    pars$lambda <- exp(parsvec[1])
+    ## Abundance
+    eta <- model$Xlambda %*% beta[1:ncol(model$Xlambda)]
+    pars$lambda <- model$lambda$link$linkinv(eta)
     
-    ## Further parameters are logit capture probabilitlies in site x visit order
+    ## Detection
+    eta <- model$Xp %*% beta[-(1:ncol(model$Xlambda))]
+    
+    l <- 0
     for(k in 1:model$K){
-      pars$p[[k]] <- rep(model$p$link$linkinv(parsvec[2]),model$T[k])
+      pars$p[[k]] <- model$p$link$linkinv(eta[l + (1:model$T[k])])
+      l <- l + model$T[k]
     }
   }
   else
@@ -117,7 +122,7 @@ cdl <- function(model,data,pars,log=TRUE){
 cdl_pm_site <- function(k,model,data,pars,log=TRUE){
     
   # 1. Abundance
-  cdl1 <- model$dN(data[[k]]$N,pars,log=TRUE)
+  cdl1 <- model$dN(data[[k]]$N,k,pars,log=TRUE)
   
   # 2. Detections
   cdl2 <- sum(lfactorial(data[[k]]$N-data[[k]]$Mstar) -

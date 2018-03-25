@@ -14,7 +14,7 @@
 #' @export
 #'
 #' @examples
-ml_fit <- function(model, data, Xlambda, Xp, upper_limit,submodel="pm",method="BFGS",trace=NULL,maxit=NULL) {
+ml_fit <- function(model, data, Xlambda=NULL, Xp=NULL, upper_limit,submodel="pm",method="BFGS",trace=NULL,maxit=NULL) {
 
   ## Identify likelihood wrapper
   lhd_wrap <- switch(submodel,pm=lhd_pm_wrap,
@@ -24,7 +24,16 @@ ml_fit <- function(model, data, Xlambda, Xp, upper_limit,submodel="pm",method="B
                      stop("Unknown submodel",submodel,".\n\n"))
   
   ## Build design matrices
+  ## Abundance
+  if(is.null(Xlambda))
+    Xlambda <- data.frame(Intercept=rep(1,model$K))
+
   model$Xlambda <- model.matrix(model$p$formula,Xlambda)
+
+  ## Detection
+  if(is.null(Xp))
+    Xp <- data.frame(Intercept=rep(1,sum(model$T)))
+  
   model$Xp <- model.matrix(model$p$formula,Xp)
     
   ## Set initial values
@@ -35,7 +44,7 @@ ml_fit <- function(model, data, Xlambda, Xp, upper_limit,submodel="pm",method="B
       max(sapply(data, function(list)
         max(list$u + list$Mstar))) # Max of min number of individuals known to be alive at each site
     }
-    else if(submodel=="mr" || submodel=="mr")
+    else if(submodel=="mr")
       minN <- sapply(data,function(X) X$n)
     
     lambda <- mean(minN / (1 - (1 - .4) ^ model$T[1]))

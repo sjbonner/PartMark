@@ -27,8 +27,8 @@ make_model <- function(mixture="Poisson",K,T,M=NULL,lambda=NULL,p=NULL){
   
   ## Add density and simulation functions for given mixture
   if(mixture == "Poisson"){
-    model$dN <- function(N,pars,log) dpois(N,pars$lambda,log=log)
-    model$rN <- function(pars) rpois(1,pars$lambda)
+    model$dN <- function(N,k,pars,log) dpois(N,pars$lambda[k],log=log)
+    model$rN <- function(k,pars) rpois(1,pars$lambda[k])
   }
   else
     stop("Only the Poisson mixture model is defined so far.\n")

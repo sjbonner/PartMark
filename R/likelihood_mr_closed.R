@@ -10,9 +10,9 @@
 #' @export
 #'
 #' @examples
-lhd_mt <- function(model,data,pars,upper_limit,log=TRUE){
+lhd_mr <- function(model,data,pars,upper_limit,log=TRUE){
   ## Add contributions for individual sites
-  tmp <- sum(sapply(1:model$K,lhd_mt_site,model=model,data=data,pars=pars,upper_limit=upper_limit,log=TRUE))    
+  tmp <- sum(sapply(1:model$K,lhd_mr_site,model=model,data=data,pars=pars,upper_limit=upper_limit,log=TRUE))    
   
   if(log)
     return(tmp)
@@ -22,9 +22,9 @@ lhd_mt <- function(model,data,pars,upper_limit,log=TRUE){
 
 #' Likelihood for Model M_t (alternative)
 #'
+#' @param beta Vector of parameter values
 #' @param model List of model components
 #' @param data List of data components
-#' @param parsvec Vector of parameter values
 #' @param upper_limit Vector of upper limits on summation over abundance for each site
 #'
 #' @details This form of the likelihood accepts parameters as a vector instead of in list form. 
@@ -36,23 +36,29 @@ lhd_mt <- function(model,data,pars,upper_limit,log=TRUE){
 #' @export
 #'
 #' @examples
-lhd_mr_wrap <- function(parsvec,model,data,upper_limit,log=TRUE){
+lhd_mr_wrap <- function(beta,model,data,upper_limit,log=TRUE){
  
+  
   ## Map parameter vector to parameter list
   if(model$mixture=="Poisson"){
-    ## First parameter is log(\lambda)
-    pars$lambda <- exp(parsvec[1])
+    ## Abundance
+    eta <- model$Xlambda %*% beta[1:ncol(model$Xlambda)]
+    pars$lambda <- model$lambda$link$linkinv(eta)
     
-    ## Further parameters are model$p$link$link capture probabilitlies in site x visit order
+    ## Detection
+    eta <- model$Xp %*% beta[-(1:ncol(model$Xlambda))]
+    
+    l <- 0
     for(k in 1:model$K){
-      pars$p[[k]] <- rep(model$p$link$linkinv(parsvec[2]),model$T[k])
+      pars$p[[k]] <- model$p$link$linkinv(eta[l + (1:model$T[k])])
+      l <- l + model$T[k]
     }
   }
   else
     stop("Only the Poisson mixture model is defined so far.\n")
   
   ## Compute lhd
-  lhd_mt(model,data,pars,upper_limit,log = log)
+  lhd_mr(model,data,pars,upper_limit,log = log)
 }
 
 #' Single Site Component of Likelihood for Model M_t
@@ -67,14 +73,14 @@ lhd_mr_wrap <- function(parsvec,model,data,upper_limit,log=TRUE){
 #' @export
 #'
 #' @examples
-lhd_mt_site <- function(k,model,data,pars,upper_limit,log=TRUE){
+lhd_mr_site <- function(k,model,data,pars,upper_limit,log=TRUE){
   ## Compute lower limit of sum
   lower_limit <- data[[k]]$n
   
   ## Sum over complete data likelihood
   tmp <- sum(sapply(lower_limit:upper_limit[k],function(N){
     data[[k]]$N <- N
-    cdl_mt_site(k,model,data,pars,log=FALSE)
+    cdl_mr_site(k,model,data,pars,log=FALSE)
   }))
   
   if(log)
@@ -96,7 +102,7 @@ lhd_mt_site <- function(k,model,data,pars,upper_limit,log=TRUE){
 #' @examples
 cdl <- function(model,data,pars,log=TRUE){
   ## Compute complete data likelihood for each site
-  cdl <- sapply(1:model$K,cdl_mt_site,model=model,data=data,pars=pars,log=TRUE)
+  cdl <- sapply(1:model$K,cdl_mr_site,model=model,data=data,pars=pars,log=TRUE)
   
   if(log)
     return(sum(cdl))
@@ -114,10 +120,10 @@ cdl <- function(model,data,pars,log=TRUE){
 #'
 #' @return
 #' @export
-cdl_mt_site <- function(k,model,data,pars,log=TRUE){
+cdl_mr_site <- function(k,model,data,pars,log=TRUE){
     
   # 1. Abundance
-  cdl1 <- model$dN(data[[k]]$N,pars,log=TRUE)
+  cdl1 <- model$dN(data[[k]]$N,k,pars,log=TRUE)
   
   # 2. Detections
   cdl2 <- lfactorial(data[[k]]$N) -
