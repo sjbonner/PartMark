@@ -43,9 +43,9 @@ lhd_m0_wrap <- function(parsvec,model,data,upper_limit,log=TRUE){
     ## First parameter is log(\lambda)
     pars$lambda <- exp(parsvec[1])
     
-    ## Further parameters are logit capture probabilitlies in site x visit order
+    ## Further parameters are model$p$link$link capture probabilitlies in site x visit order
     for(k in 1:model$K){
-      pars$p[[k]] <- rep(ilogit(parsvec[2]),model$T[k])
+      pars$p[[k]] <- rep(model$p$link$linkinv(parsvec[2]),model$T[k])
     }
   }
   else

@@ -32,7 +32,8 @@ ml_fit <- function(model, data, upper_limit,submodel="pm",method="BFGS",trace=NU
     p <- .4
     
     ## Transform
-    inits <- c(log(lambda), logit(p))
+    inits <- c(model$lambda$link$linkfun(lambda), 
+               model$p$link$linkfun(p))
   }
   else
     stop("Only the Poisson mixture model is defined so far.\n")
@@ -70,8 +71,8 @@ ml_fit <- function(model, data, upper_limit,submodel="pm",method="BFGS",trace=NU
   
   ## Backtransform
   if (model$mixture == "Poisson") {
-    estimates <- rbind(exp(estimates_link[1,c(1,3,4)]),
-                       ilogit(unlist(estimates_link[2,c(1,3,4)])))
+    estimates <- rbind(model$lambda$link$linkinv(estimates_link[1,c(1,3,4)]),
+                       model$p$link$linkinv(unlist(estimates_link[2,c(1,3,4)])))
   }
   
   ## Return output

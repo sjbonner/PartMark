@@ -45,7 +45,7 @@ lhd_pm_wrap <- function(parsvec,model,data,upper_limit,log=TRUE){
     
     ## Further parameters are logit capture probabilitlies in site x visit order
     for(k in 1:model$K){
-      pars$p[[k]] <- rep(ilogit(parsvec[2]),model$T[k])
+      pars$p[[k]] <- rep(model$p$link$linkinv(parsvec[2]),model$T[k])
     }
   }
   else
