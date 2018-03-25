@@ -22,7 +22,7 @@ simulate_Nmix_MR <- function(model,pars){
 simulate_Nmix_MR_site <- function(k,model,pars){
   
   ## Simulate abundance
-  N <- model$rN(pars)
+  N <- model$rN(k,pars)
   
   ## Generate capture histories
   W <- t(replicate(N,rbinom(model$T[k],1,pars$p[[k]])))
