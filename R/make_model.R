@@ -30,8 +30,12 @@ make_model <- function(mixture="Poisson",K,T,M=NULL,lambda=NULL,p=NULL){
     model$dN <- function(N,k,pars,log) dpois(N,pars$lambda[k],log=log)
     model$rN <- function(k,pars) rpois(1,pars$lambda[k])
   }
+  else if(mixture == "Negative Binomial"){
+    model$dN <- function(N,k,pars,log) dnbinom(N,mu=pars$lambda[k],size=pars$alpha[k],log=log)
+    model$rN <- function(k,pars) rnbinom(N,mu=pars$lambda[k],size=pars$alpha[k])
+  }
   else
-    stop("Only the Poisson mixture model is defined so far.\n")
+    stop("Only the Poisson and Negative Binomial mixture models are defined so far.\n")
   
   ## Create link functions for abundance and detection
   ## Default

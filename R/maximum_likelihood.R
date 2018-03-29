@@ -56,8 +56,32 @@ ml_fit <- function(model, data, Xlambda=NULL, Xp=NULL, upper_limit,submodel="pm"
     inits <- c(model$lambda$link$linkfun(lambda), 
                model$p$link$linkfun(p))
   }
+  else if (model$mixture == "Negative Binomial") {
+    ## Lambda
+    if(submodel=="pm"){
+      minN <-
+        max(sapply(data, function(list)
+          max(list$u + list$Mstar))) # Max of min number of individuals known to be alive at each site
+    }
+    else if(submodel=="mr")
+      minN <- sapply(data,function(X) X$n)
+    
+    Ninit <- minN / (1 - (1 - .4) ^ model$T[1])
+    
+    lambda <- mean(Ninit)
+    
+    alpha <- lambda^2/(max(c(1.1*lambda,var(Ninit))) - lambda)
+      
+    ## p
+    p <- .4
+    
+    ## Transform
+    inits <- c(model$lambda$link$linkfun(lambda), 
+               log(alpha),
+               model$p$link$linkfun(p))
+  }
   else
-    stop("Only the Poisson mixture model is defined so far.\n")
+    stop("Only the Poisson and Negative Binomial mixtures model are defined so far.\n")
   
   ## Set control list for optim
   control <- list(fnscale = -1) ## Maximize!

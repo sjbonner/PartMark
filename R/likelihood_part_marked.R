@@ -39,23 +39,28 @@ lhd_pm <- function(model,data,pars,upper_limit,log=TRUE){
 lhd_pm_wrap <- function(beta,model,data,upper_limit,log=TRUE){
   
   ## Map parameter vector to parameter list
-  if(model$mixture=="Poisson"){
-    ## Abundance
+  ## Abundance
     eta <- model$Xlambda %*% beta[1:ncol(model$Xlambda)]
     pars$lambda <- model$lambda$link$linkinv(eta)
     
-    ## Detection
-    eta <- model$Xp %*% beta[-(1:ncol(model$Xlambda))]
-    
-    l <- 0
-    for(k in 1:model$K){
-      pars$p[[k]] <- model$p$link$linkinv(eta[l + (1:model$T[k])])
-      l <- l + model$T[k]
-    }
+  if(model$mixture=="Negative Binomial"){
+    pars$alpha <- exp(beta[ncol(model$Xlambda)+1])
   }
   else
-    stop("Only the Poisson mixture model is defined so far.\n")
+    stop("Only the Poisson and Negative Binomial mixture models are defined so far.\n")
   
+  ## Detection
+  if(model$mixture=="Poisson")
+    eta <- model$Xp %*% beta[-(1:ncol(model$Xlambda))]
+  else if(model$mixture=="Negative Binomial")
+      eta <- model$Xp %*% beta[-(1:(ncol(model$Xlambda)+1))]
+    
+  l <- 0
+  for(k in 1:model$K){
+    pars$p[[k]] <- model$p$link$linkinv(eta[l + (1:model$T[k])])
+    l <- l + model$T[k]
+  }
+ 
   ## Compute lhd
   lhd_pm(model,data,pars,upper_limit,log = log)
 }
