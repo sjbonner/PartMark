@@ -13,7 +13,7 @@ simulate_Nmix_MR <- function(model,pars){
     simulate_Nmix_MR_site(k,model,pars))
   
   ## Reconfigure data
-  list(N=lapply(data,function(X) X$N),
+  list(N=sapply(data,function(X) X$N),
        marked=lapply(data,function(X) X$marked),
        unmarked=lapply(data,function(X) X$unmarked),
        partmarked=lapply(data,function(X) X$partmarked))

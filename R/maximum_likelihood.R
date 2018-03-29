@@ -59,9 +59,8 @@ ml_fit <- function(model, data, Xlambda=NULL, Xp=NULL, upper_limit,submodel="pm"
   else if (model$mixture == "Negative Binomial") {
     ## Lambda
     if(submodel=="pm"){
-      minN <-
-        max(sapply(data, function(list)
-          max(list$u + list$Mstar))) # Max of min number of individuals known to be alive at each site
+      minN <- sapply(data, function(list)
+          max(list$u + list$Mstar)) # Max of min number of individuals known to be alive at each site
     }
     else if(submodel=="mr")
       minN <- sapply(data,function(X) X$n)
@@ -85,6 +84,7 @@ ml_fit <- function(model, data, Xlambda=NULL, Xp=NULL, upper_limit,submodel="pm"
   
   ## Set control list for optim
   control <- list(fnscale = -1) ## Maximize!
+  
   if(!is.null(trace))
     control$trace <- trace
   if(!is.null(maxit))
@@ -104,20 +104,23 @@ ml_fit <- function(model, data, Xlambda=NULL, Xp=NULL, upper_limit,submodel="pm"
     )
   
   ## Compute standard errors and CIs on link scale
-  if(model$mixture=="Poisson"){
-    ses <- sqrt(-1*diag(solve(opt_out$hessian)))
-    ci <- opt_out$par + 1.96*outer(ses,c(-1,1))
-    
-    estimates_link <- data.frame(Estimate=opt_out$par,
+  ses <- sqrt(-1*diag(solve(opt_out$hessian)))
+  ci <- opt_out$par + 1.96*outer(ses,c(-1,1))
+  
+  estimates_link <- data.frame(Estimate=opt_out$par,
                                SE=ses,
                                Lower95=ci[,1],
                                Upper95=ci[,2])
-  }
   
   ## Backtransform
   if (model$mixture == "Poisson") {
     estimates <- rbind(model$lambda$link$linkinv(estimates_link[1,c(1,3,4)]),
                        model$p$link$linkinv(unlist(estimates_link[2,c(1,3,4)])))
+  }
+  else if (model$mixture == "Negative Binomial") {
+    estimates <- rbind(model$lambda$link$linkinv(estimates_link[1,c(1,3,4)]),
+                       exp(estimates_link[2,c(1,3,4)]),
+                       model$p$link$linkinv(unlist(estimates_link[3,c(1,3,4)])))
   }
   
   ## Return output

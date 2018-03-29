@@ -16,7 +16,7 @@
 #' @export
 #'
 #' @examples
-make_model <- function(mixture="Poisson",K,T,M=NULL,lambda=NULL,p=NULL){
+make_model <- function(mixture="Poisson",K,T,M=NULL,lambda=NULL,alpha=NULL,p=NULL){
   
   ## Initialize model list
   model <- list(mixture=mixture,K=K,T=T)
@@ -31,8 +31,8 @@ make_model <- function(mixture="Poisson",K,T,M=NULL,lambda=NULL,p=NULL){
     model$rN <- function(k,pars) rpois(1,pars$lambda[k])
   }
   else if(mixture == "Negative Binomial"){
-    model$dN <- function(N,k,pars,log) dnbinom(N,mu=pars$lambda[k],size=pars$alpha[k],log=log)
-    model$rN <- function(k,pars) rnbinom(N,mu=pars$lambda[k],size=pars$alpha[k])
+    model$dN <- function(N,k,pars,log) dnbinom(N,mu=pars$lambda[k],size=pars$alpha,log=log)
+    model$rN <- function(k,pars) rnbinom(1,mu=pars$lambda[k],size=pars$alpha)
   }
   else
     stop("Only the Poisson and Negative Binomial mixture models are defined so far.\n")
