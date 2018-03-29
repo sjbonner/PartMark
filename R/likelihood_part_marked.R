@@ -40,15 +40,13 @@ lhd_pm_wrap <- function(beta,model,data,upper_limit,log=TRUE){
   
   ## Map parameter vector to parameter list
   ## Abundance
-    eta <- model$Xlambda %*% beta[1:ncol(model$Xlambda)]
-    pars$lambda <- model$lambda$link$linkinv(eta)
+  eta <- model$Xlambda %*% beta[1:ncol(model$Xlambda)]
+  pars$lambda <- model$lambda$link$linkinv(eta)
     
   if(model$mixture=="Negative Binomial"){
     pars$alpha <- exp(beta[ncol(model$Xlambda)+1])
   }
-  else
-    stop("Only the Poisson and Negative Binomial mixture models are defined so far.\n")
-  
+
   ## Detection
   if(model$mixture=="Poisson")
     eta <- model$Xp %*% beta[-(1:ncol(model$Xlambda))]

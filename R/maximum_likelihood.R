@@ -44,8 +44,12 @@ ml_fit <- function(model, data, Xlambda=NULL, Xp=NULL, upper_limit,submodel="pm"
       max(sapply(data, function(list)
         max(list$u + list$Mstar))) # Max of min number of individuals known to be alive at each site
     }
-    else if(submodel=="mr")
+    else if(submodel=="mr"){
       minN <- sapply(data,function(X) X$n)
+    }
+    else if(submodel=="um"){
+      minN <- sapply(data,function(X) max(X$y))
+    }
     
     lambda <- mean(minN / (1 - (1 - .4) ^ model$T[1]))
     
@@ -62,8 +66,12 @@ ml_fit <- function(model, data, Xlambda=NULL, Xp=NULL, upper_limit,submodel="pm"
       minN <- sapply(data, function(list)
           max(list$u + list$Mstar)) # Max of min number of individuals known to be alive at each site
     }
-    else if(submodel=="mr")
+    else if(submodel=="mr"){
       minN <- sapply(data,function(X) X$n)
+    }
+    else if(submodel=="um"){
+      minN <- sapply(data,function(X) max(X$y))
+    }
     
     Ninit <- minN / (1 - (1 - .4) ^ model$T[1])
     
