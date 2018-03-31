@@ -128,9 +128,7 @@ cdl_pm_site <- function(k,model,data,pars,log=TRUE){
   cdl1 <- model$dN(data[[k]]$N,k,pars,log=TRUE)
   
   # 2. Detections
-  cdl2 <- sum(lfactorial(data[[k]]$N-data[[k]]$Mstar) -
-                lfactorial(data[[k]]$N-data[[k]]$Mstar-data[[k]]$u) -
-                lfactorial(data[[k]]$u) +
+  cdl2 <- sum(lchoose(data[[k]]$N-data[[k]]$Mstar,data[[k]]$u) + 
                 data[[k]]$y * log(pars$p[[k]]) +
                 (data[[k]]$N - data[[k]]$y) * log(1-pars$p[[k]]))
   if(log)

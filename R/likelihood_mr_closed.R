@@ -46,9 +46,7 @@ lhd_mr_wrap <- function(beta,model,data,upper_limit,log=TRUE){
   if(model$mixture=="Negative Binomial"){
     pars$alpha <- exp(beta[ncol(model$Xlambda)+1])
   }
-  else
-    stop("Only the Poisson and Negative Binomial mixture models are defined so far.\n")
-  
+
   ## Detection
   if(model$mixture=="Poisson")
     eta <- model$Xp %*% beta[-(1:ncol(model$Xlambda))]
@@ -130,12 +128,9 @@ cdl_mr_site <- function(k,model,data,pars,log=TRUE){
   cdl1 <- model$dN(data[[k]]$N,k,pars,log=TRUE)
   
   # 2. Detections
-  cdl2 <- lfactorial(data[[k]]$N) -
-    lfactorial(data[[k]]$N-data[[k]]$n) -
-    lfactorial(data[[k]]$n) +
+  cdl2 <- lchoose(data[[k]]$N,data[[k]]$n)+
     sum(data[[k]]$y * log(pars$p[[k]]) +
           (data[[k]]$N - data[[k]]$y) * log(1-pars$p[[k]]))
-
 
   if(log)
     return(cdl1 + cdl2)
