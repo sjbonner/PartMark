@@ -60,7 +60,11 @@ lhd_mr_wrap <- function(beta,model,data,upper_limit,log=TRUE){
   }
   
   ## Compute lhd
-  lhd_mr(model,data,pars,upper_limit,log = log)
+  lhd <- lhd_mr(model,data,pars,upper_limit,log = log)
+  
+  cat(pars$alpha,":",lhd,"\n")
+  
+  return(lhd)
 }
 
 #' Single Site Component of Likelihood for Model M_t
@@ -102,7 +106,7 @@ lhd_mr_site <- function(k,model,data,pars,upper_limit,log=TRUE){
 #' @export
 #'
 #' @examples
-cdl <- function(model,data,pars,log=TRUE){
+cdl_mr <- function(model,data,pars,log=TRUE){
   ## Compute complete data likelihood for each site
   cdl <- sapply(1:model$K,cdl_mr_site,model=model,data=data,pars=pars,log=TRUE)
   

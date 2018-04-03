@@ -102,7 +102,7 @@ lhd_pm_site <- function(k,model,data,pars,upper_limit,log=TRUE){
 #' @export
 #'
 #' @examples
-cdl <- function(model,data,pars,log=TRUE){
+cdl_pm <- function(model,data,pars,log=TRUE){
   ## Compute complete data likelihood for each site
   cdl <- sapply(1:model$K,cdl_pm_site,model=model,data=data,pars=pars,log=TRUE)
   
