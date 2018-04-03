@@ -132,10 +132,9 @@ cdl_mr_site <- function(k,model,data,pars,log=TRUE){
   cdl1 <- model$dN(data[[k]]$N,k,pars,log=TRUE)
   
   # 2. Detections
-  cdl2 <- lchoose(data[[k]]$N,data[[k]]$n)+
+  cdl2 <- lchoose(data[[k]]$N,data[[k]]$n) +
     sum(data[[k]]$y * log(pars$p[[k]]) +
           (data[[k]]$N - data[[k]]$y) * log(1-pars$p[[k]]))
-
   if(log)
     return(cdl1 + cdl2)
   else

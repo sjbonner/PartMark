@@ -18,7 +18,6 @@ ml_fit <- function(model, data, Xlambda=NULL, Xp=NULL, upper_limit,submodel="pm"
 
   ## Identify likelihood wrapper
   lhd_wrap <- switch(submodel,pm=lhd_pm_wrap,
-                     mt=lhd_mt_wrap,
                      mr=lhd_mr_wrap,
                      um=lhd_um_wrap,
                      stop("Unknown submodel",submodel,".\n\n"))
@@ -28,7 +27,7 @@ ml_fit <- function(model, data, Xlambda=NULL, Xp=NULL, upper_limit,submodel="pm"
   if(is.null(Xlambda))
     Xlambda <- data.frame(Intercept=rep(1,model$K))
 
-  model$Xlambda <- model.matrix(model$p$formula,Xlambda)
+  model$Xlambda <- model.matrix(model$lambda$formula,Xlambda)
 
   ## Detection
   if(is.null(Xp))
