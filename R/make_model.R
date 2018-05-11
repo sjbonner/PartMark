@@ -53,5 +53,19 @@ make_model <- function(mixture="Poisson",K,T,M=NULL,lambda=NULL,alpha=NULL,p=NUL
   if(!is.null(p$link))
     model$p$link <- make.link(p$link)
   
+  ## Construct design matrices
+  ## Abundance
+  if (is.null(Xlambda))
+    Xlambda <- data.frame(Intercept = rep(1, model$K))
+  
+  model$Xlambda <- model.matrix(model$lambda$formula, Xlambda)
+  
+  ## Detection
+  if (is.null(Xp))
+    Xp <- data.frame(Intercept = rep(1, sum(model$T)))
+  
+  model$Xp <- model.matrix(model$p$formula, Xp)
+  
+  
   return(model)
 }

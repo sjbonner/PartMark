@@ -26,32 +26,13 @@ ml_fit <-
            trace = NULL,
            maxit = NULL) {
 
-    # ## Identify likelihood wrapper
-    # lhd_wrap <- switch(submodel,
-    #                    pm = lhd_pm_wrap,
-    #                    mr = lhd_mr_wrap,
-    #                    um = lhd_um_wrap,
-    #                    stop("Unknown submodel", submodel, ".\n\n"))
-
-    ## Select appropriate likelihood 
+   ## Select appropriate likelihood 
     lhd_wrap <- switch(submodel,
                        pm = lhd_wrap,
                        mr = lhd_wrap,
                        um = lhd_um,
                        stop("Unknown submodel", submodel, ".\n\n"))
     
-    ## Build design matrices
-    ## Abundance
-    if (is.null(Xlambda))
-      Xlambda <- data.frame(Intercept = rep(1, model$K))
-    
-    model$Xlambda <- model.matrix(model$lambda$formula, Xlambda)
-    
-    ## Detection
-    if (is.null(Xp))
-      Xp <- data.frame(Intercept = rep(1, sum(model$T)))
-    
-    model$Xp <- model.matrix(model$p$formula, Xp)
     
     ## Set initial values
     if(is.null(inits)){
@@ -162,41 +143,21 @@ ml_fit <-
                                      paste0("p:",colnames(model$Xp)))
     
     ## Compute standard errors and CIs on link scale
-    opt_out$var <- solve(opt_out$hessian)
-    ses <- sqrt(-1 * diag(opt_out$var))
+    opt_out$var <- -solve(opt_out$hessian)
+    ses <- sqrt(diag(opt_out$var))
     ci <- opt_out$par + 1.96 * outer(ses, c(-1, 1))
     
-    estimates_link <- data.frame(
+    estimates <- data.frame(
       Estimate = opt_out$par,
       SE = ses,
       Lower95 = ci[, 1],
       Upper95 = ci[, 2]
     )
     
-    ## Backtransform
-    if(ncol(model$Xlambda==1) && ncol(model$Xp)==1){
-      if (model$mixture == "Poisson") {
-        estimates <-
-          rbind(model$lambda$link$linkinv(estimates_link[1, c(1, 3, 4)]),
-                model$p$link$linkinv(unlist(estimates_link[2, c(1, 3, 4)])))
-      }
-      else if (model$mixture == "Negative Binomial") {
-        estimates <-
-          rbind(
-            model$lambda$link$linkinv(estimates_link[1, c(1, 3, 4)]),
-            exp(estimates_link[2, c(1, 3, 4)]),
-            model$p$link$linkinv(unlist(estimates_link[3, c(1, 3, 4)]))
-          )
-      }
-    }
-    else
-      estimates <- NULL
-    
     ## Return output
     return(list(
       optim = opt_out,
       inits = inits,
-      link = estimates_link,
-      natural = estimates
+      estimates = estimates
     ))
   }
