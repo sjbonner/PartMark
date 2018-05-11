@@ -75,14 +75,13 @@ make_model <-
     if (is.null(lambda))
       lambda <- list(X=data.frame(Intercept = rep(1, model$K)))
     
-    model$Xlambda <- model.matrix(model$lambda$formula,lambda$X)
+    model$lambda$X <- model.matrix(model$lambda$formula,lambda$X)
     
     ## Detection
     if (is.null(p))
        p <- list(X=data.frame(Intercept = rep(1, sum(model$T))))
     
-    model$Xp <- model.matrix(model$p$formula, p$X)
-    
+    model$p$X <- model.matrix(model$p$formula, p$X)
     
     return(model)
   }

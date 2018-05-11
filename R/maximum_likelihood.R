@@ -54,8 +54,8 @@ ml_fit <-
         p <- mean(sapply(data,function(X) mean(X$y)/lambda))
         
         ## Transform initial values
-        inits <- c(model$lambda$link$linkfun(lambda),rep(0,ncol(model$Xlambda)-1),
-                   model$p$link$linkfun(p),rep(0,ncol(model$Xp)-1))
+        inits <- c(model$lambda$link$linkfun(lambda),rep(0,ncol(model$lambda$X)-1),
+                   model$p$link$linkfun(p),rep(0,ncol(model$p$X)-1))
       }
       else if (model$mixture == "Negative Binomial") {
         ## Lambda
@@ -82,9 +82,9 @@ ml_fit <-
         p <- mean(sapply(data,function(X) mean(X$y)/lambda))
         
         ## Transform initial values
-        inits <- c(model$lambda$link$linkfun(lambda),rep(0,ncol(model$Xlambda)-1),
+        inits <- c(model$lambda$link$linkfun(lambda),rep(0,ncol(model$lambda$X)-1),
                    log(alpha),
-                   model$p$link$linkfun(p),rep(0,ncol(model$Xp)-1))
+                   model$p$link$linkfun(p),rep(0,ncol(model$p$X)-1))
       }
     }
     else{
@@ -128,15 +128,15 @@ ml_fit <-
     if(model$mixture=="Poisson")
       names(opt_out$par) <- 
       colnames(opt_out$hessian) <-
-      rownames(opt_out$hessian) <- c(paste0("lambda:",colnames(model$Xlambda)),
-                                    paste0("p:",colnames(model$Xp)))
+      rownames(opt_out$hessian) <- c(paste0("lambda:",colnames(model$lambda$X)),
+                                    paste0("p:",colnames(model$p$X)))
 
     if(model$mixture=="Negative Binomial")
       names(opt_out$par) <- 
       colnames(opt_out$hessian) <-
-      rownames(opt_out$hessian) <- c(paste0("lambda:",colnames(model$Xlambda)),
+      rownames(opt_out$hessian) <- c(paste0("lambda:",colnames(model$lambda$X)),
                                      "alpha",
-                                     paste0("p:",colnames(model$Xp)))
+                                     paste0("p:",colnames(model$p$X)))
     
     ## Compute standard errors and CIs on link scale
     opt_out$var <- -solve(opt_out$hessian)

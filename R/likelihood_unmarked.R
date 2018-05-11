@@ -41,18 +41,18 @@ lhd_um <- function(beta=NULL,model,data,pars=NULL,upper_limit,log=TRUE){
 map_parameters_um <- function(beta,model,data){
 
   ## Abundance
-  eta <- model$Xlambda %*% beta[1:ncol(model$Xlambda)]
+  eta <- model$lambda$X %*% beta[1:ncol(model$lambda$X)]
   pars <- list(lambda=model$lambda$link$linkinv(eta))
   
   if(model$mixture=="Negative Binomial"){
-    pars$alpha <- exp(beta[ncol(model$Xlambda)+1])
+    pars$alpha <- exp(beta[ncol(model$lambda$X)+1])
   }
   
   ## Detection
   if(model$mixture=="Poisson")
-    eta <- model$Xp %*% beta[-(1:ncol(model$Xlambda))]
+    eta <- model$p$X %*% beta[-(1:ncol(model$lambda$X))]
   else if(model$mixture=="Negative Binomial")
-    eta <- model$Xp %*% beta[-(1:(ncol(model$Xlambda)+1))]
+    eta <- model$p$X %*% beta[-(1:(ncol(model$lambda$X)+1))]
   
   l <- 0
   for(k in 1:model$K){
