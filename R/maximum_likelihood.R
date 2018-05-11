@@ -66,11 +66,11 @@ ml_fit <-
         lambda <- mean(minN / (1 - (1 - .4) ^ model$T[1]))
         
         ## p
-        p <- .4
+        p <- mean(sapply(data,function(X) mean(X$y)/lambda))
         
         ## Transform initial values
-        inits <- c(model$lambda$link$linkfun(lambda),
-                   model$p$link$linkfun(p))
+        inits <- c(model$lambda$link$linkfun(lambda),rep(0,ncol(model$Xlambda)-1),
+                   model$p$link$linkfun(p),rep(0,ncol(model$Xp)-1))
       }
       else if (model$mixture == "Negative Binomial") {
         ## Lambda
@@ -94,12 +94,12 @@ ml_fit <-
         alpha <- lambda ^ 2 / (max(c(1.1 * lambda, var(Ninit))) - lambda)
         
         ## p
-        p <- .4
-
+        p <- mean(sapply(data,function(X) mean(X$y)/lambda))
+        
         ## Transform initial values
-        inits <- c(model$lambda$link$linkfun(lambda),
+        inits <- c(model$lambda$link$linkfun(lambda),rep(0,ncol(model$Xlambda)-1),
                    log(alpha),
-                   model$p$link$linkfun(p))
+                   model$p$link$linkfun(p),rep(0,ncol(model$Xp)-1))
       }
     }
     else{
@@ -139,8 +139,23 @@ ml_fit <-
         upper_limit = upper_limit
       )
     
+    ## Add names to parameters
+    if(model$mixture=="Poisson")
+      names(opt_out$par) <- 
+      colnames(opt_out$hessian) <-
+      rownames(opt_out$hessian) <- c(paste0("lambda:",colnames(model$Xlambda)),
+                                    paste0("p:",colnames(model$Xp)))
+
+    if(model$mixture=="Negative Binomial")
+      names(opt_out$par) <- 
+      colnames(opt_out$hessian) <-
+      rownames(opt_out$hessian) <- c(paste0("lambda:",colnames(model$Xlambda)),
+                                     "alpha",
+                                     paste0("p:",colnames(model$Xp)))
+    
     ## Compute standard errors and CIs on link scale
-    ses <- sqrt(-1 * diag(solve(opt_out$hessian)))
+    opt_out$var <- solve(opt_out$hessian)
+    ses <- sqrt(-1 * diag(opt_out$var))
     ci <- opt_out$par + 1.96 * outer(ses, c(-1, 1))
     
     estimates_link <- data.frame(
@@ -151,19 +166,23 @@ ml_fit <-
     )
     
     ## Backtransform
-    if (model$mixture == "Poisson") {
-      estimates <-
-        rbind(model$lambda$link$linkinv(estimates_link[1, c(1, 3, 4)]),
-              model$p$link$linkinv(unlist(estimates_link[2, c(1, 3, 4)])))
+    if(ncol(model$Xlambda==1) && ncol(model$Xp)==1){
+      if (model$mixture == "Poisson") {
+        estimates <-
+          rbind(model$lambda$link$linkinv(estimates_link[1, c(1, 3, 4)]),
+                model$p$link$linkinv(unlist(estimates_link[2, c(1, 3, 4)])))
+      }
+      else if (model$mixture == "Negative Binomial") {
+        estimates <-
+          rbind(
+            model$lambda$link$linkinv(estimates_link[1, c(1, 3, 4)]),
+            exp(estimates_link[2, c(1, 3, 4)]),
+            model$p$link$linkinv(unlist(estimates_link[3, c(1, 3, 4)]))
+          )
+      }
     }
-    else if (model$mixture == "Negative Binomial") {
-      estimates <-
-        rbind(
-          model$lambda$link$linkinv(estimates_link[1, c(1, 3, 4)]),
-          exp(estimates_link[2, c(1, 3, 4)]),
-          model$p$link$linkinv(unlist(estimates_link[3, c(1, 3, 4)]))
-        )
-    }
+    else
+      estimates <- NULL
     
     ## Return output
     return(list(
