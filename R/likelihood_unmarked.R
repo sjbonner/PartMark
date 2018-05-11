@@ -18,7 +18,7 @@ lhd_um <- function(beta=NULL,model,data,pars=NULL,upper_limit,log=TRUE){
     else
       pars <- map_parameters_um(beta,model,data)
   }
-  
+
   ## Add contributions for individual sites
   tmp <- sum(sapply(1:model$K,lhd_um_site,model=model,data=data,pars=pars,upper_limit=upper_limit,log=TRUE))    
   

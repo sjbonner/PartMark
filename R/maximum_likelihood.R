@@ -6,8 +6,6 @@
 #' @param method Optimization method.
 #' @param trace Trace level for optim (defaults to none).
 #' @param maxit Maximum iterations in optim (defaults to optim default).
-#' @param Xlambda Matrix of covariates of abundance model
-#' @param Xp Matri of covariats of detection model
 #' @param submodel One of "pm" (Partial Marking), "mr" (Mark Recapture), "um" (Unmarked)
 #'
 #' @return
@@ -17,8 +15,6 @@
 ml_fit <-
   function(model,
            data,
-           Xlambda = NULL,
-           Xp = NULL,
            upper_limit,
            submodel = "pm",
            inits=NULL,
