@@ -139,8 +139,8 @@ ml_fit <-
                                      paste0("p:",colnames(model$p$X)))
     
     ## Compute standard errors and CIs on link scale
-    opt_out$var <- -solve(opt_out$hessian)
-    ses <- sqrt(diag(opt_out$var))
+    vcov <- -solve(opt_out$hessian)
+    ses <- sqrt(diag(vcov))
     ci <- opt_out$par + 1.96 * outer(ses, c(-1, 1))
     
     estimates <- data.frame(
@@ -153,6 +153,7 @@ ml_fit <-
     ## Return output
     return(list(
       optim = opt_out,
+      vcov = vcov,
       inits = inits,
       estimates = estimates
     ))
