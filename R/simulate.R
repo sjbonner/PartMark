@@ -15,6 +15,7 @@ simulate_Nmix_MR <- function(model,pars){
   ## Reconfigure data
   list(N=sapply(data,function(X) X$N),
        marked=lapply(data,function(X) X$marked),
+       full.marked=lapply(data,function(X) X$full.marked),
        unmarked=lapply(data,function(X) X$unmarked),
        partmarked=lapply(data,function(X) X$partmarked))
 }
@@ -76,11 +77,17 @@ simulate_Nmix_MR_site <- function(k,model,pars){
   caps1 <- which(W==1)
   ncap <- sum(W)
   ncap2 <- round(N*model$T[k]*(1-(1-sum(M)/N)^(1/model$T[k])))
-  remove <- sample(caps1,ncap - ncap2)
+  
   W2 <- W
-  W2[remove] <- 0
+  if(ncap > ncap2){
+    remove <- sample(caps1,ncap - ncap2)
+    W2[remove] <- 0
+  }
   
   marked.data <- list(n=sum(apply(W2,1,sum)>0),y=apply(W2,2,sum))
+  
+  # 2) Return complete MR data
+  full.marked.data <- list(n=sum(apply(W,1,sum) > 0),y=apply(W,2,sum))
   
   ## Sumarized data for part marked analysis
   partmarked.data <- list(u=u,v=v,y=u+v,M=M,Mstar=c(0,cumsum(M[-model$T[k]])))
@@ -88,6 +95,7 @@ simulate_Nmix_MR_site <- function(k,model,pars){
   ## Return data
   return(list(N=N,
               marked=marked.data,
+              full.marked=full.marked.data,
               unmarked=unmarked.data,
               partmarked=partmarked.data))
 }
