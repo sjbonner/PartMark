@@ -10,7 +10,15 @@
 #' @export
 #'
 #' @examples
-lhd_mr <- function(model,data,pars,upper_limit,log=TRUE){
+lhd_mr <- function(beta=NULL,model,data,pars=NULL,upper_limit,log=TRUE){
+  ## Map regression coefficients to natural parameters if necessary
+  if(is.null(pars)){
+    if(is.null(beta))
+      stop("You must either supply beta or pars as arguments.")
+    else
+      pars <- map_parameters_mr(beta,model,data)
+  }
+  
   ## Add contributions for individual sites
   tmp <- sum(sapply(1:model$K,lhd_mr_site,model=model,data=data,pars=pars,upper_limit=upper_limit,log=TRUE))    
   
@@ -20,25 +28,19 @@ lhd_mr <- function(model,data,pars,upper_limit,log=TRUE){
     return(exp(tmp))
 }
 
-#' Likelihood for Model M_t (alternative)
+#' Map Coefficients to Natural Parameters (Fully marked)
 #'
 #' @param beta Vector of parameter values
 #' @param model List of model components
 #' @param data List of data components
-#' @param upper_limit Vector of upper limits on summation over abundance for each site
 #'
-#' @details This form of the likelihood accepts parameters as a vector instead of in list form. 
-#'   Parameters are assumed to be transformed to a scale on which their support is the entire real
-#'   line. This function is intended to be called by other functions for computing estimates and 
-#'   should not be used directly.
-#' 
+#' @details 
 #' @return
 #' @export
 #'
 #' @examples
-lhd_mr_wrap <- function(beta,model,data,upper_limit,log=TRUE){
+map_parameters_mr <- function(beta,model,data){
  
-  ## Map parameter vector to parameter list
   ## Abundance
   eta <- model$Xlambda %*% beta[1:ncol(model$Xlambda)]
   pars$lambda <- model$lambda$link$linkinv(eta)
@@ -58,13 +60,8 @@ lhd_mr_wrap <- function(beta,model,data,upper_limit,log=TRUE){
     pars$p[[k]] <- model$p$link$linkinv(eta[l + (1:model$T[k])])
     l <- l + model$T[k]
   }
-  
-  ## Compute lhd
-  lhd <- lhd_mr(model,data,pars,upper_limit,log = log)
-  
-  cat(pars$alpha,":",lhd,"\n")
-  
-  return(lhd)
+
+  return(pars)
 }
 
 #' Single Site Component of Likelihood for Model M_t

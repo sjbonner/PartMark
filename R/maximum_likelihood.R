@@ -25,11 +25,19 @@ ml_fit <-
            method = "BFGS",
            trace = NULL,
            maxit = NULL) {
-    ## Identify likelihood wrapper
+
+    # ## Identify likelihood wrapper
+    # lhd_wrap <- switch(submodel,
+    #                    pm = lhd_pm_wrap,
+    #                    mr = lhd_mr_wrap,
+    #                    um = lhd_um_wrap,
+    #                    stop("Unknown submodel", submodel, ".\n\n"))
+
+    ## Select appropriate likelihood 
     lhd_wrap <- switch(submodel,
-                       pm = lhd_pm_wrap,
-                       mr = lhd_mr_wrap,
-                       um = lhd_um_wrap,
+                       pm = lhd_wrap,
+                       mr = lhd_wrap,
+                       um = lhd_um,
                        stop("Unknown submodel", submodel, ".\n\n"))
     
     ## Build design matrices
