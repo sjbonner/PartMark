@@ -23,9 +23,9 @@ ml_fit <-
            maxit = NULL) {
 
    ## Select appropriate likelihood 
-    lhd_wrap <- switch(submodel,
-                       pm = lhd_wrap,
-                       mr = lhd_wrap,
+    lhd <- switch(submodel,
+                       pm = lhd_pm,
+                       mr = lhd_mr,
                        um = lhd_um,
                        stop("Unknown submodel", submodel, ".\n\n"))
     
@@ -115,7 +115,7 @@ ml_fit <-
     opt_out <-
       optim(
         inits,
-        lhd_wrap,
+        lhd,
         control = control,
         method = method,
         hessian = TRUE,
