@@ -43,7 +43,7 @@ lhd_pm <- function(beta=NULL,model,data,pars=NULL,upper_limit,log=TRUE){
 map_parameters_pm <- function(beta,model,data){
   ## Abundance
   eta <- model$lambda$X %*% beta[1:ncol(model$lambda$X)]
-  pars$lambda <- model$lambda$link$linkinv(eta)
+  pars <- list(lambda=model$lambda$link$linkinv(eta))
     
   if(model$mixture=="Negative Binomial"){
     pars$alpha <- exp(beta[ncol(model$lambda$X)+1])
