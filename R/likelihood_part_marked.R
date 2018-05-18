@@ -20,7 +20,7 @@ lhd_pm <- function(beta=NULL,model,data,pars=NULL,upper_limit,log=TRUE){
   }
   
   ## Add contributions for individual sites
-  tmp <- sum(sapply(1:model$K,lhd_pm_site,model=model,data=data,pars=pars,upper_limit=upper_limit,log=TRUE))    
+  tmp <- sum(sapply(1:model$K,lhd_pm_site_fast,model=model,data=data,pars=pars,upper_limit=upper_limit,log=TRUE))    
   
   if(log)
     return(tmp)
@@ -137,3 +137,46 @@ cdl_pm_site <- function(k,model,data,pars,log=TRUE){
   else
     return(exp(cdl1 + cdl2))
 }
+
+#' Single Site Component of Likelihood for Unmarked Model 
+#'
+#' @param model List of model components
+#' @param data List of data components
+#' @param pars List of parameters
+#' @param upper_limit Vector of upper limits on summation over abundance for each site
+#' @param log If TRUE compute log-likelihood
+#'
+#' @return
+#' @export
+#'
+#' @examples
+lhd_pm_site_fast <- function(k,model,data,pars,upper_limit,log = TRUE,debug = FALSE){
+  
+  if(debug)
+    browser()
+  
+  ## Compute lower limit of sum
+  lower_limit <- max(data[[k]]$u + data[[k]]$Mstar)
+  
+  ## Compute individual likelihood components
+  # Abundance
+  cdl1 <- model$dN(lower_limit:upper_limit[k],k,pars,log = TRUE)
+  
+  # Combinatorial term
+  cdl2 <- sum(lchoose(lower_limit-data[[k]]$Mstar,data[[k]]$u)) +
+    #cumsum(c(0,model$T[k]*log((lower_limit + 1):upper_limit[k]-data[[k]]$Mstar))) - # Need an outer here too
+    cumsum(c(0,apply(log(outer((lower_limit + 1):upper_limit[k],data[[k]]$Mstar,"-")),1,sum))) - 
+    cumsum(c(0,apply(log(outer((lower_limit + 1):upper_limit[k],data[[k]]$u+data[[k]]$Mstar,"-")),1,sum)))
+  
+  # Detections
+  cdl3 <- sum(data[[k]]$y * log(pars$p[[k]])) +
+    outer((lower_limit:upper_limit[k]),data[[k]]$y,"-") %*% log(1 - pars$p[[k]])
+  
+  tmp <- sum(exp(cdl1 + cdl2 + cdl3))
+  
+  if(log)
+    return(log(tmp))
+  else
+    return(tmp)
+}
+
